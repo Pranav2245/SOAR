@@ -33,7 +33,7 @@ from sklearn.metrics import classification_report, roc_auc_score
 MODEL_PATH = os.path.join(os.path.dirname(__file__), "triage_model.pkl")
 
 
-def generate_synthetic_data(n_samples=8000) -> pd.DataFrame:
+def generate_synthetic_data(n_samples=10000) -> pd.DataFrame:
     """
     Generate comprehensive synthetic Wazuh alert data for training.
     Covers 20 attack types (including 8 password cracking variants)
@@ -195,9 +195,98 @@ def generate_synthetic_data(n_samples=8000) -> pd.DataFrame:
             "src_ip_reputation": (55, 100), "agent_os": [1],  # Windows RDP
             "event_count_1h": (60, 350), "is_fim_event": 0, "has_mitre_tag": 1,
         },
+
+        # ═══ NETWORK ATTACKS (4 types) ═══
+
+        # 21. DNS Tunneling — hides data/C2 traffic inside DNS queries
+        # Exfil via encoded subdomains (MITRE T1071.004)
+        "dns_tunneling": {
+            "rule_level": (9, 13), "hour_of_day": (0, 24), "day_of_week": (0, 7),
+            "failed_logins": (0, 1), "src_ip_is_internal": 1,
+            "src_ip_reputation": (0, 20), "agent_os": [0, 1],
+            "event_count_1h": (100, 500), "is_fim_event": 0, "has_mitre_tag": 1,
+        },
+        # 22. ARP Spoofing / Poisoning — redirects traffic by faking ARP
+        # Man-in-the-middle on local network (MITRE T1557.002)
+        "arp_spoofing": {
+            "rule_level": (10, 14), "hour_of_day": (0, 24), "day_of_week": (0, 7),
+            "failed_logins": (0, 0), "src_ip_is_internal": 1,
+            "src_ip_reputation": (0, 10), "agent_os": [0, 1],
+            "event_count_1h": (50, 200), "is_fim_event": 0, "has_mitre_tag": 1,
+        },
+        # 23. Man-in-the-Middle (MITM) — intercepts network communication
+        # SSL stripping, session hijacking (MITRE T1557)
+        "mitm_attack": {
+            "rule_level": (11, 15), "hour_of_day": (0, 24), "day_of_week": (0, 7),
+            "failed_logins": (0, 2), "src_ip_is_internal": 1,
+            "src_ip_reputation": (0, 15), "agent_os": [0, 1, 2],
+            "event_count_1h": (20, 80), "is_fim_event": 0, "has_mitre_tag": 1,
+        },
+        # 24. Port Scanning / Reconnaissance — mapping open services
+        # Nmap, Masscan probing (MITRE T1046)
+        "port_scan": {
+            "rule_level": (7, 11), "hour_of_day": (0, 24), "day_of_week": (0, 7),
+            "failed_logins": (0, 3), "src_ip_is_internal": 0,
+            "src_ip_reputation": (30, 80), "agent_os": [0, 1],
+            "event_count_1h": (100, 500), "is_fim_event": 0, "has_mitre_tag": 1,
+        },
+
+        # ═══ APPLICATION ATTACKS (3 types) ═══
+
+        # 25. Supply Chain Attack — compromised dependency/update
+        # Malicious package injected into build pipeline (MITRE T1195)
+        "supply_chain": {
+            "rule_level": (13, 15), "hour_of_day": (0, 24), "day_of_week": (0, 7),
+            "failed_logins": (0, 1), "src_ip_is_internal": 0,
+            "src_ip_reputation": (20, 60), "agent_os": [0, 1],
+            "event_count_1h": (5, 30), "is_fim_event": 1, "has_mitre_tag": 1,
+        },
+        # 26. Zero-Day Exploit — exploiting unknown vulnerability
+        # No patch available, unusual process behavior (MITRE T1203)
+        "zero_day": {
+            "rule_level": (14, 15), "hour_of_day": (0, 24), "day_of_week": (0, 7),
+            "failed_logins": (0, 2), "src_ip_is_internal": 0,
+            "src_ip_reputation": (60, 100), "agent_os": [0, 1, 2],
+            "event_count_1h": (3, 20), "is_fim_event": 1, "has_mitre_tag": 1,
+        },
+        # 27. API Abuse / Broken Auth — mass API endpoint exploitation
+        # Rate abuse, token manipulation (OWASP API Top 10)
+        "api_abuse": {
+            "rule_level": (8, 12), "hour_of_day": (0, 24), "day_of_week": (0, 7),
+            "failed_logins": (5, 50), "src_ip_is_internal": 0,
+            "src_ip_reputation": (30, 75), "agent_os": [0],  # API servers
+            "event_count_1h": (100, 400), "is_fim_event": 0, "has_mitre_tag": 1,
+        },
+
+        # ═══ ADVANCED PERSISTENT THREATS (3 types) ═══
+
+        # 28. Fileless Malware — executes in memory, no disk write
+        # PowerShell/WMI abuse, hard to detect (MITRE T1059.001)
+        "fileless_malware": {
+            "rule_level": (12, 15), "hour_of_day": (0, 24), "day_of_week": (0, 7),
+            "failed_logins": (0, 1), "src_ip_is_internal": 1,
+            "src_ip_reputation": (0, 15), "agent_os": [1],  # Windows PowerShell
+            "event_count_1h": (3, 25), "is_fim_event": 0, "has_mitre_tag": 1,
+        },
+        # 29. Watering Hole — compromises a website the target visits
+        # Infects trusted sites to target specific orgs (MITRE T1189)
+        "watering_hole": {
+            "rule_level": (10, 14), "hour_of_day": (8, 18), "day_of_week": (0, 5),
+            "failed_logins": (0, 1), "src_ip_is_internal": 1,
+            "src_ip_reputation": (0, 25), "agent_os": [1, 2],  # Workstations
+            "event_count_1h": (3, 15), "is_fim_event": 0, "has_mitre_tag": 1,
+        },
+        # 30. Reverse Shell — attacker gets remote shell on victim
+        # Netcat, Metasploit callback (MITRE T1059)
+        "reverse_shell": {
+            "rule_level": (13, 15), "hour_of_day": (0, 24), "day_of_week": (0, 7),
+            "failed_logins": (0, 1), "src_ip_is_internal": 1,
+            "src_ip_reputation": (0, 20), "agent_os": [0, 1],
+            "event_count_1h": (2, 10), "is_fim_event": 0, "has_mitre_tag": 1,
+        },
     }
 
-    # Generate attack samples (~250 per type = 3000 total)
+    # Generate attack samples
     samples_per_attack = n_samples // 5 // len(attack_types)
     for attack_name, profile in attack_types.items():
         for _ in range(max(samples_per_attack, 50)):
