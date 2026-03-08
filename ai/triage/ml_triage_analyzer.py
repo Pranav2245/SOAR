@@ -33,10 +33,11 @@ from sklearn.metrics import classification_report, roc_auc_score
 MODEL_PATH = os.path.join(os.path.dirname(__file__), "triage_model.pkl")
 
 
-def generate_synthetic_data(n_samples=5000) -> pd.DataFrame:
+def generate_synthetic_data(n_samples=8000) -> pd.DataFrame:
     """
     Generate comprehensive synthetic Wazuh alert data for training.
-    Covers 12 attack types + normal operations with realistic distributions.
+    Covers 20 attack types (including 8 password cracking variants)
+    + normal operations with realistic distributions.
     """
     np.random.seed(42)
     data = []
@@ -126,6 +127,73 @@ def generate_synthetic_data(n_samples=5000) -> pd.DataFrame:
             "failed_logins": (0, 5), "src_ip_is_internal": 0,
             "src_ip_reputation": (50, 100), "agent_os": [0],
             "event_count_1h": (200, 500), "is_fim_event": 0, "has_mitre_tag": 1,
+        },
+
+        # ═══ PASSWORD CRACKING ATTACKS (8 types) ═══
+
+        # 13. Dictionary Attack — tries common passwords from wordlists
+        # Uses tools like John the Ripper, Hydra with rockyou.txt
+        "dictionary_attack": {
+            "rule_level": (10, 14), "hour_of_day": (0, 8), "day_of_week": (0, 7),
+            "failed_logins": (30, 200), "src_ip_is_internal": 0,
+            "src_ip_reputation": (55, 95), "agent_os": [0, 1],
+            "event_count_1h": (80, 400), "is_fim_event": 0, "has_mitre_tag": 1,
+        },
+        # 14. Credential Stuffing — uses breached username:password pairs
+        # Automated tools replay leaked credentials across services
+        "credential_stuffing": {
+            "rule_level": (9, 13), "hour_of_day": (0, 24), "day_of_week": (0, 7),
+            "failed_logins": (10, 80), "src_ip_is_internal": 0,
+            "src_ip_reputation": (50, 90), "agent_os": [0, 1],
+            "event_count_1h": (40, 250), "is_fim_event": 0, "has_mitre_tag": 1,
+        },
+        # 15. Password Spraying — tries a few common passwords against MANY users
+        # Avoids account lockout by spreading across accounts
+        "password_spraying": {
+            "rule_level": (8, 12), "hour_of_day": (6, 22), "day_of_week": (0, 5),
+            "failed_logins": (5, 20), "src_ip_is_internal": 0,
+            "src_ip_reputation": (40, 85), "agent_os": [1],  # Targets Windows AD
+            "event_count_1h": (100, 500), "is_fim_event": 0, "has_mitre_tag": 1,
+        },
+        # 16. Kerberoasting — extracts Kerberos TGS tickets to crack offline
+        # Targets Active Directory service accounts (MITRE T1558.003)
+        "kerberoasting": {
+            "rule_level": (11, 15), "hour_of_day": (0, 24), "day_of_week": (0, 7),
+            "failed_logins": (0, 5), "src_ip_is_internal": 1,  # Internal attacker
+            "src_ip_reputation": (0, 15), "agent_os": [1],  # Windows domain
+            "event_count_1h": (5, 30), "is_fim_event": 0, "has_mitre_tag": 1,
+        },
+        # 17. Pass-the-Hash (PtH) — uses stolen NTLM hashes to authenticate
+        # No plaintext password needed, mimikatz-style (MITRE T1550.002)
+        "pass_the_hash": {
+            "rule_level": (12, 15), "hour_of_day": (0, 6), "day_of_week": (0, 7),
+            "failed_logins": (0, 3), "src_ip_is_internal": 1,
+            "src_ip_reputation": (0, 10), "agent_os": [1],  # Windows
+            "event_count_1h": (3, 20), "is_fim_event": 0, "has_mitre_tag": 1,
+        },
+        # 18. Rainbow Table / Offline Hash Cracking — precomputed hash lookup
+        # Detected by monitoring for mass hash dump (SAM/NTDS.dit extraction)
+        "rainbow_table_crack": {
+            "rule_level": (13, 15), "hour_of_day": (0, 24), "day_of_week": (0, 7),
+            "failed_logins": (0, 2), "src_ip_is_internal": 1,
+            "src_ip_reputation": (0, 10), "agent_os": [1],
+            "event_count_1h": (2, 15), "is_fim_event": 1, "has_mitre_tag": 1,
+        },
+        # 19. Keylogging / Credential Harvesting — captures keystrokes
+        # Detected via suspicious process injection or FIM alerts
+        "keylogging": {
+            "rule_level": (10, 14), "hour_of_day": (8, 18), "day_of_week": (0, 5),
+            "failed_logins": (0, 1), "src_ip_is_internal": 1,
+            "src_ip_reputation": (0, 15), "agent_os": [1, 2],  # Windows/Mac endpoints
+            "event_count_1h": (3, 20), "is_fim_event": 1, "has_mitre_tag": 1,
+        },
+        # 20. RDP Brute Force — targets Windows Remote Desktop Protocol
+        # High event rate on port 3389 (MITRE T1110.001)
+        "rdp_brute_force": {
+            "rule_level": (10, 14), "hour_of_day": (0, 8), "day_of_week": (0, 7),
+            "failed_logins": (25, 200), "src_ip_is_internal": 0,
+            "src_ip_reputation": (55, 100), "agent_os": [1],  # Windows RDP
+            "event_count_1h": (60, 350), "is_fim_event": 0, "has_mitre_tag": 1,
         },
     }
 
