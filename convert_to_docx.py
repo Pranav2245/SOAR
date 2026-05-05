@@ -259,6 +259,9 @@ def add_formatted_runs(paragraph, text):
 
 if __name__ == '__main__':
     import sys
-    md_file = sys.argv[1] if len(sys.argv) > 1 else '/Users/pranavsharma/.gemini/antigravity/brain/2bf8db16-3164-4880-b2ae-8485376b5de6/artifacts/research_paper.md'
-    out_file = '/Users/pranavsharma/Documents/SOAR/SOAR_Research_Paper.docx'
+    if len(sys.argv) < 3:
+        print("Usage: python3 convert_to_docx.py <input.md> <output.docx>")
+        sys.exit(1)
+    md_file = sys.argv[1]
+    out_file = sys.argv[2]
     parse_md_to_docx(md_file, out_file)
