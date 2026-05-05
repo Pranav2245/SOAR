@@ -27,6 +27,26 @@ graph TD
 
 ---
 
+## 🛠️ Dashboard & Technical Stack
+
+The SOAR Dashboard is a full-stack **MERN** application designed for high-performance security monitoring and incident response.
+
+### Frontend (User Interface)
+*   **React 19 & Vite**: Ultra-fast, component-based architecture for real-time data streaming.
+*   **Glassmorphic Design**: A premium, dark-themed UI built with custom Vanilla CSS for maximum performance and visual depth.
+*   **Recharts**: Interactive data visualization for threat severity heatmaps and MTTR trends.
+*   **Lucide React**: A comprehensive set of pixel-perfect security and navigation icons.
+*   **React Router 7**: Sophisticated client-side routing for seamless page transitions.
+
+### Backend (API & Security)
+*   **Express.js**: High-performance RESTful API serving as the orchestration bridge.
+*   **MongoDB & Mongoose**: Flexible, schema-based storage for incident history and audit logs.
+*   **JWT & Bcrypt**: Robust authentication and secure password hashing for SOC analyst portals.
+*   **Morgan & Helmet**: Production-grade logging and security middleware.
+*   **Wazuh-SDK/HTTP**: Deep integration with the Wazuh Indexer and Manager APIs.
+
+---
+
 ## ✨ Key Features
 
 ### 🧠 8-Module AI Intelligence Suite
