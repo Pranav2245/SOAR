@@ -14,6 +14,7 @@ import Reports from './pages/Reports';
 import SystemHealth from './pages/SystemHealth';
 import AuditLog from './pages/AuditLog';
 import SOARIntegration from './pages/SOARIntegration';
+import Settings from './pages/Settings';
 
 function AppLayout({ children }) {
   return (
@@ -68,7 +69,9 @@ function AppRoutes() {
       <Route path="/soar" element={
         <ProtectedRoute><AppLayout><SOARIntegration /></AppLayout></ProtectedRoute>
       } />
-
+      <Route path="/settings" element={
+        <ProtectedRoute><AppLayout><Settings /></AppLayout></ProtectedRoute>
+      } />
       <Route path="*" element={<Navigate to="/dashboard" replace />} />
     </Routes>
   );

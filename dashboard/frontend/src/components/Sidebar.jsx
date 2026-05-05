@@ -2,7 +2,7 @@ import { NavLink } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
   LayoutDashboard, ShieldAlert, Brain, Fish, Scan,
-  Network, FileText, Activity, ClipboardList, Shield, Layers
+  Network, FileText, Activity, ClipboardList, Shield, Layers, Settings as SettingsIcon
 } from 'lucide-react';
 
 const navItems = [
@@ -16,6 +16,7 @@ const navItems = [
   { path: '/reports', label: 'Reports & Analytics', icon: FileText },
   { path: '/system', label: 'System Health', icon: Activity },
   { path: '/audit', label: 'Audit Log', icon: ClipboardList, analystOnly: true },
+  { path: '/settings', label: 'Settings', icon: SettingsIcon },
 ];
 
 export default function Sidebar() {
