@@ -3,8 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { Bell, AlertTriangle, ShieldAlert, Clock, ChevronRight, X, Siren } from 'lucide-react';
+import { API_URL } from '../config';
 
-const API = 'http://localhost:3000/api';
+const API = API_URL;
 const POLL_INTERVAL = 30000; // 30 seconds
 
 export default function NotificationBell() {

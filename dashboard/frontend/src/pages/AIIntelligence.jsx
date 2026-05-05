@@ -1,9 +1,10 @@
+import { API_URL } from '../config';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Brain, TrendingUp, Target, BarChart3 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis } from 'recharts';
 
-const API = 'http://localhost:3000/api';
+const API = API_URL;
 
 const MODEL_CARDS = [
   { name: 'ML Triage (XGBoost)', accuracy: 99.94, f1: 0.9474, version: 'v2.0', color: '#3b82f6', features: '41 features', dataset: '200K samples (KDD Cup 99)' },

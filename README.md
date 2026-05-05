@@ -91,27 +91,24 @@ A premium, dark-themed glassmorphic dashboard for SOC analysts:
 
 ## 🚀 Quick Start Guide
 
-### 1. Launch the Infrastructure (Docker)
-Ensure Docker is allocated at least 8GB of RAM.
+### 1. Launch the Entire Stack
+The ecosystem (Wazuh, TheHive, MISP, and the AI Dashboard) is fully containerized.
 ```bash
+# Clone and enter the repo
+git clone https://github.com/Pranav2245/SOAR.git
+cd SOAR
+
+# Start all services
 docker-compose up -d
 ```
 
-### 2. Start the Custom Dashboard
-**Backend API:**
-```bash
-cd dashboard/backend
-npm install
-npm run seed  # Create default admin
-npm run dev
-```
-**Frontend UI:**
-```bash
-cd dashboard/frontend
-npm install
-npm run dev
-```
-*Access the dashboard at `http://localhost:5173` (admin / admin123)*
+### 2. Access the Interfaces
+| Interface | URL | Credentials |
+| :--- | :--- | :--- |
+| **SOAR AI Dashboard** | `http://localhost` | `admin` / `admin123` |
+| **Wazuh Dashboard** | `https://localhost` | `admin` / `admin` |
+| **TheHive** | `http://localhost:9000` | `admin@thehive.local` / `admin` |
+| **MISP** | `http://localhost:8080` | `admin@admin.test` / `admin` |
 
 ### 3. Deploy the Agent (Kali VM)
 On your Mac, push the installer to your Kali VM:

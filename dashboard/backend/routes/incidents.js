@@ -393,9 +393,8 @@ router.post('/sync-wazuh', verifyToken, async (req, res) => {
           ...options,
           rejectUnauthorized: false,
           headers: {
-            ...options.headers,
-            'Authorization': 'Basic ' + Buffer.from('admin:admin').toString('base64'),
             'Content-Type': 'application/json',
+            ...options.headers,
           }
         }, (res) => {
           let data = '';
@@ -408,9 +407,17 @@ router.post('/sync-wazuh', verifyToken, async (req, res) => {
       });
     };
 
+    const indexerHost = process.env.WAZUH_INDEXER_URL || 'https://localhost:9200';
+    const indexerUrl = new URL(indexerHost);
+    const auth = Buffer.from(`${process.env.WAZUH_USER || 'admin'}:${process.env.WAZUH_PASS || 'admin'}`).toString('base64');
+
     // Pull last 50 high-severity alerts (Level 7+)
     const indexerRes = await queryIndexer({
-      hostname: 'localhost', port: 9200, method: 'POST', path: '/wazuh-alerts-*/_search'
+      hostname: indexerUrl.hostname, 
+      port: indexerUrl.port || 443, 
+      method: 'POST', 
+      path: '/wazuh-alerts-*/_search',
+      headers: { 'Authorization': 'Basic ' + auth }
     }, {
       size: 50,
       sort: [{ "@timestamp": { order: "desc" } }],

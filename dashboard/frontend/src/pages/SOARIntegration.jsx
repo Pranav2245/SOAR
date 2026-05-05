@@ -1,3 +1,4 @@
+import { API_URL } from '../config';
 import { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import {
@@ -6,7 +7,7 @@ import {
   Clock, Zap, Bug, Eye, Brain, Layers, Network
 } from 'lucide-react';
 
-const API = 'http://localhost:3000/api';
+const API = API_URL;
 
 const SEVERITY_MAP = { 1: 'Low', 2: 'Medium', 3: 'High', 4: 'Critical' };
 const SEVERITY_COLORS = { 1: '#22c55e', 2: '#f59e0b', 3: '#f97316', 4: '#ef4444' };

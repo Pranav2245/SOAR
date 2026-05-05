@@ -1,10 +1,11 @@
+import { API_URL } from '../config';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { AlertTriangle, ShieldCheck, ShieldOff, Clock, Activity, Zap, Scan } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip } from 'recharts';
 
-const API = 'http://localhost:3000/api';
+const API = API_URL;
 
 const SEVERITY_COLORS = ['#22c55e', '#f59e0b', '#f97316', '#ef4444'];
 

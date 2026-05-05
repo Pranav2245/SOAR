@@ -1,8 +1,9 @@
+import { API_URL } from '../config';
 import { useState } from 'react';
 import axios from 'axios';
 import { Fish, Send, AlertTriangle, CheckCircle, Shield, Globe, Lock, Clock, Info } from 'lucide-react';
 
-const API = 'http://localhost:3000/api';
+const API = API_URL;
 
 const SAMPLE_EMAILS = [
   { label: '| CEO Fraud BEC', text: 'Hi John, I need you to urgently wire $45,000 to our new vendor. This is time-sensitive and confidential. Do not discuss with anyone. Use account 4829103847 at Swiss National Bank. Reply when done. - CEO' },

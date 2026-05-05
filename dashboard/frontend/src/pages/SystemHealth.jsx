@@ -1,8 +1,9 @@
+import { API_URL } from '../config';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Activity, CheckCircle, XCircle } from 'lucide-react';
 
-const API = 'http://localhost:3000/api';
+const API = API_URL;
 
 export default function SystemHealth() {
   const [health, setHealth] = useState(null);

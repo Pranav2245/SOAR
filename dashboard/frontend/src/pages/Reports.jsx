@@ -1,9 +1,10 @@
+import { API_URL } from '../config';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { FileText, Download, Eye } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 
-const API = 'http://localhost:3000/api';
+const API = API_URL;
 const MTTR_DATA = [
   { day: 'Mon', mttr: 45 }, { day: 'Tue', mttr: 32 }, { day: 'Wed', mttr: 28 },
   { day: 'Thu', mttr: 15 }, { day: 'Fri', mttr: 22 }, { day: 'Sat', mttr: 12 }, { day: 'Sun', mttr: 14 },

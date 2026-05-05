@@ -247,6 +247,54 @@ services:
       - ./wazuh-certificates/wazuh.dashboard.pem:/etc/nginx/certs/cert.pem:ro
       - ./wazuh-certificates/wazuh.dashboard-key.pem:/etc/nginx/certs/key.pem:ro
 
+  # =============================================
+  # SOAR DASHBOARD (MERN Stack)
+  # =============================================
+  mongodb:
+    image: mongo:6.0
+    container_name: mongodb
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb-data:/data/db
+    networks:
+      - soar-network
+
+  soar.backend:
+    build:
+      context: ./dashboard/backend
+    container_name: soar.backend
+    restart: always
+    environment:
+      - MONGO_URI=mongodb://mongodb:27017/soar_dashboard
+      - JWT_SECRET=soar-dashboard-secret-key-2026
+      - PORT=3000
+      - WAZUH_INDEXER_URL=https://wazuh.indexer:9200
+      - WAZUH_USER=admin
+      - WAZUH_PASS=admin
+    ports:
+      - "3000:3000"
+    depends_on:
+      - mongodb
+      - wazuh.indexer
+    networks:
+      - soar-network
+
+  soar.frontend:
+    build:
+      context: ./dashboard/frontend
+      args:
+        - VITE_API_URL=http://localhost:3000
+    container_name: soar.frontend
+    restart: always
+    ports:
+      - "80:80"
+    depends_on:
+      - soar.backend
+    networks:
+      - soar-network
+
 networks:
   soar-network:
     driver: bridge
@@ -264,5 +312,6 @@ volumes:
   elasticsearch-data:
   cassandra-data:
   misp-db-data:
+  mongodb-data:
   wazuh-certs-volume:
     external: true
