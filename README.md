@@ -96,10 +96,4 @@ This triggers **8 real-world scenarios**:
 - Network Reconnaissance (T1046)
 
 ---
-
-## 📄 Documentation & Research
-- **[Research Paper](SOAR_Research_Paper.md)**: Deep dive into the ML Triage methodology and KDD Cup '99 mapping.
-- **[Final System Report](SOAR_Final_Report.md)**: Comprehensive guide to the infrastructure and AI modules.
-
----
 **Developed for the Advanced SOAR Research Project — 2026**
