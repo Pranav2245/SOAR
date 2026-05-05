@@ -27,6 +27,26 @@ graph TD
 
 ---
 
+## 🎭 Dual-Portal Architecture
+
+The dashboard implements a secure, **Role-Based Access Control (RBAC)** system to ensure different stakeholders have the appropriate level of oversight:
+
+*   **🛡️ SOC Analyst Portal (Command Center)**: Full orchestration capabilities, including one-click IP blocking, incident triage, and automated forensic PDF generation.
+*   **👁️ Standard User Portal (Monitoring)**: A read-only environment for monitoring system health, threat gauges, and real-time security posture without the ability to modify system state.
+
+---
+
+## 🚀 What Makes This SOAR Unique?
+
+Unlike standard SIEM/SOAR implementations, this project introduces several key innovations:
+
+1.  **Cross-Dataset AI Validation**: Models are trained on algorithmic data but validated against the **real-world KDD Cup '99 dataset**, ensuring they generalize to actual adversarial behavior.
+2.  **8-Module Intelligence Suite**: A comprehensive AI suite covering NLP phishing analysis, Graph-based lateral movement prediction, and XGBoost triage.
+3.  **Zero-Touch Mitigation**: High-confidence threats are blocked at the network layer (iptables) in **under 5 seconds** through automated Cortex playbooks.
+4.  **Forensic PDF Automation**: Automatically translates complex technical logs into clean, forensic reports for management and legal review.
+
+---
+
 ## 🛠️ Dashboard & Technical Stack
 
 The SOAR Dashboard is a full-stack **MERN** application designed for high-performance security monitoring and incident response.
