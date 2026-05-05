@@ -6,7 +6,7 @@ services:
   # WAZUH STACK (SIEM / EDR)
   # =============================================
   wazuh.manager:
-    image: wazuh/wazuh-manager:5.0.0
+    image: wazuh/wazuh-manager:4.9.0
     hostname: wazuh.manager
     container_name: wazuh.manager
     restart: always
@@ -45,7 +45,9 @@ services:
       - soar-network
 
   wazuh.indexer:
-    image: wazuh/wazuh-indexer:5.0.0
+    build:
+      context: .
+      dockerfile: Dockerfile.indexer
     hostname: wazuh.indexer
     container_name: wazuh.indexer
     restart: always
@@ -54,12 +56,19 @@ services:
     environment:
       - OPENSEARCH_JAVA_OPTS=-Xms1g -Xmx1g
       - bootstrap.memory_lock=true
+      - bootstrap.system_call_filter=false
       - network.host=wazuh.indexer
       - node.name=wazuh.indexer
       - cluster.initial_cluster_manager_nodes=wazuh.indexer
       - node.max_local_storage_nodes=1
       - plugins.security.allow_default_init_securityindex=true
       - NODES_DN=CN=wazuh.indexer,OU=Wazuh,O=Wazuh,L=California,C=US
+      - plugins.security.ssl.http.pemcert_filepath=/usr/share/wazuh-indexer/config/certs/indexer.pem
+      - plugins.security.ssl.http.pemkey_filepath=/usr/share/wazuh-indexer/config/certs/indexer-key.pem
+      - plugins.security.ssl.http.pemtrustedcas_filepath=/usr/share/wazuh-indexer/config/certs/root-ca.pem
+      - plugins.security.ssl.transport.pemcert_filepath=/usr/share/wazuh-indexer/config/certs/indexer.pem
+      - plugins.security.ssl.transport.pemkey_filepath=/usr/share/wazuh-indexer/config/certs/indexer-key.pem
+      - plugins.security.ssl.transport.pemtrustedcas_filepath=/usr/share/wazuh-indexer/config/certs/root-ca.pem
     ulimits:
       memlock:
         soft: -1
@@ -69,25 +78,21 @@ services:
         hard: 65536
     volumes:
       - wazuh-indexer-data:/var/lib/wazuh-indexer
-      - ./wazuh-certificates/root-ca.pem:/usr/share/wazuh-indexer/config/certs/root-ca.pem
-      - ./wazuh-certificates/wazuh.indexer-key.pem:/usr/share/wazuh-indexer/config/certs/indexer-key.pem
-      - ./wazuh-certificates/wazuh.indexer.pem:/usr/share/wazuh-indexer/config/certs/indexer.pem
-      - ./wazuh-certificates/admin.pem:/usr/share/wazuh-indexer/config/certs/admin.pem
-      - ./wazuh-certificates/admin-key.pem:/usr/share/wazuh-indexer/config/certs/admin-key.pem
     networks:
       - soar-network
 
   wazuh.dashboard:
-    image: wazuh/wazuh-dashboard:5.0.0
+    image: wazuh/wazuh-dashboard:4.9.0
     hostname: wazuh.dashboard
     container_name: wazuh.dashboard
     restart: always
     ports:
-      - "443:5601"
+      - "443:443"
     environment:
       - SERVER_PORT=5601
       - SERVER_HOST=0.0.0.0
       - OPENSEARCH_HOSTS=https://wazuh.indexer:9200
+      - INDEXER_URL=https://wazuh.indexer:9200
       - INDEXER_USERNAME=admin
       - INDEXER_PASSWORD=admin
       - WAZUH_API_URL=https://wazuh.manager
@@ -95,13 +100,16 @@ services:
       - DASHBOARD_PASSWORD=kibanaserver
       - API_USERNAME=wazuh-wui
       - API_PASSWORD=MyS3cr37P450r.*-
-      - SERVER_SSL_CERTIFICATE=/usr/share/wazuh-dashboard/config/certs/dashboard.pem
-      - SERVER_SSL_KEY=/usr/share/wazuh-dashboard/config/certs/dashboard-key.pem
-      - OPENSEARCH_SSL_CERTIFICATE_AUTHORITIES=/usr/share/wazuh-dashboard/config/certs/root-ca.pem
+      - SERVER_SSL_CERTIFICATE=/usr/share/wazuh-dashboard/certs/dashboard.pem
+      - SERVER_SSL_KEY=/usr/share/wazuh-dashboard/certs/dashboard-key.pem
+      - OPENSEARCH_SSL_CERTIFICATE_AUTHORITIES=/usr/share/wazuh-dashboard/certs/root-ca.pem
     volumes:
-      - ./wazuh-certificates/wazuh.dashboard.pem:/usr/share/wazuh-dashboard/config/certs/dashboard.pem
-      - ./wazuh-certificates/wazuh.dashboard-key.pem:/usr/share/wazuh-dashboard/config/certs/dashboard-key.pem
-      - ./wazuh-certificates/root-ca.pem:/usr/share/wazuh-dashboard/config/certs/root-ca.pem
+      - ./wazuh-certificates/wazuh.dashboard.pem:/usr/share/wazuh-dashboard/certs/dashboard.pem
+      - ./wazuh-certificates/wazuh.dashboard-key.pem:/usr/share/wazuh-dashboard/certs/dashboard-key.pem
+      - ./wazuh-certificates/root-ca.pem:/usr/share/wazuh-dashboard/certs/root-ca.pem
+      - ./wazuh-certificates/wazuh.dashboard.pem:/etc/wazuh-dashboard/certs/dashboard.pem
+      - ./wazuh-certificates/wazuh.dashboard-key.pem:/etc/wazuh-dashboard/certs/dashboard-key.pem
+      - ./wazuh-certificates/root-ca.pem:/etc/wazuh-dashboard/certs/root-ca.pem
       - wazuh-dashboard-config:/usr/share/wazuh-dashboard/config
       - wazuh-dashboard-custom:/usr/share/wazuh-dashboard/plugins/wazuh/public/assets/custom
     depends_on:
@@ -159,6 +167,9 @@ services:
       - "9001:9001"
     networks:
       - soar-network
+    volumes:
+      - ./cortex/responders:/opt/cortex/responders
+      - ./cortex/analyzers:/opt/cortex/analyzers
 
   # =============================================
   # THEHIVE 5 (Case Management)
@@ -181,8 +192,6 @@ services:
       - elasticsearch
       - --es-hostnames
       - elasticsearch
-      - --es-port
-      - "9200"
       - --no-config-cortex
     ports:
       - "9000:9000"
@@ -208,11 +217,18 @@ services:
   # =============================================
   # MISP (Threat Intelligence Platform)
   # =============================================
+  misp-redis:
+    image: redis:6
+    container_name: misp-redis
+    networks:
+      - soar-network
+
   misp:
     image: coolacid/misp-docker:core-latest
     container_name: misp
     depends_on:
       - misp-db
+      - misp-redis
     environment:
       - MYSQL_HOST=misp-db
       - MYSQL_DATABASE=misp
@@ -221,10 +237,15 @@ services:
       - MISP_ADMIN_EMAIL=admin@admin.test
       - MISP_ADMIN_PASSPHRASE=admin
       - MISP_BASEURL=http://localhost:8080
+      - CRON_USER_ID=1
+      - REDIS_FQDN=misp-redis
     ports:
       - "8080:80"
     networks:
       - soar-network
+    volumes:
+      - ./wazuh-certificates/wazuh.dashboard.pem:/etc/nginx/certs/cert.pem:ro
+      - ./wazuh-certificates/wazuh.dashboard-key.pem:/etc/nginx/certs/key.pem:ro
 
 networks:
   soar-network:
@@ -243,3 +264,5 @@ volumes:
   elasticsearch-data:
   cassandra-data:
   misp-db-data:
+  wazuh-certs-volume:
+    external: true

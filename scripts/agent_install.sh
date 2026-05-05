@@ -50,7 +50,7 @@ if grep -q "$WAZUH_MANAGER_IP" /var/ossec/etc/ossec.conf 2>/dev/null; then
   echo "[+] Manager IP correctly set in ossec.conf."
 else
   echo "[*] Patching ossec.conf with Manager IP..."
-  sed -i "s|<address>.*</address>|<address>$WAZUH_MANAGER_IP</address>|g" /var/ossec/etc/ossec.conf
+  sed -i "s#<address>.*</address>#<address>$WAZUH_MANAGER_IP</address>#g" /var/ossec/etc/ossec.conf
 fi
 
 # Step 5: Enable and start the agent service

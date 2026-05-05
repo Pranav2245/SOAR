@@ -33,7 +33,7 @@
     Example Custom Rule: Detect specific keyword in a log file.
   -->
   <rule id="100003" level="8">
-    <decoded_as>syslog</decoded_as>
+    <if_sid>530</if_sid>
     <match>MALWARE_DETECTED|phishing_url_clicked</match>
     <description>A malware or phishing related event was logged.</description>
     <group>malware_detection,phishing,</group>

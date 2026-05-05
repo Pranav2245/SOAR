@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/var/ossec/framework/python/bin/python3
 """
 Wazuh-to-TheHive Integration Script
 ====================================
@@ -29,7 +29,7 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 # --- Configuration ---
 THEHIVE_URL = os.environ.get('THEHIVE_URL', 'http://thehive:9000')
-THEHIVE_API_KEY = os.environ.get('THEHIVE_API_KEY', 'YOUR_THEHIVE_API_KEY')
+THEHIVE_API_KEY = os.environ.get('THEHIVE_API_KEY', 'mZMfJp3OWSvn3+pITEpaalxdWSwynI3D')
 ALERT_LEVEL_THRESHOLD = 7
 
 # Setup logging

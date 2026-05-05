@@ -21,7 +21,7 @@ It is designed to be deployed on a Mac host using Docker, with agents installed 
 4. **Enrichment:** TheHive runs a Cortex Analyzer (e.g., `mock_ip_reputation.py` or MISP integration) against the IP. 
 5. **Response:** If the IP is confirmed malicious, Cortex executes a Responder (`wazuh_block_ip.py`). The responder sends an API call back to Wazuh to trigger an Active Response (e.g., `firewall-drop`).
 6. **Mitigation:** Wazuh pushes the block command to the Kali VM agent, effectively cutting off the attacker.
-
+   
 ---
 
 ## 2. Setup Guide (Mac Host + Kali VM)
