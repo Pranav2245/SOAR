@@ -1,75 +1,105 @@
-# SOAR Project: Automated Security Operations Architecture
+# SOAR Project: Next-Gen AI-Augmented Security Operations 🛡️
 
-This project implements a complete Security Orchestration, Automation, and Response (SOAR) architecture using open-source tools: **Wazuh**, **TheHive**, **Cortex**, **MISP**, and the **ELK Stack**.
-It is designed to be deployed on a Mac host using Docker, with agents installed on a Kali Linux Virtual Machine.
+[![Docker](https://img.shields.io/badge/Docker-Enabled-blue?logo=docker)](https://www.docker.com/)
+[![Wazuh](https://img.shields.io/badge/SIEM-Wazuh-00a9e0)](https://wazuh.com/)
+[![React](https://img.shields.io/badge/Frontend-React-61dafb?logo=react)](https://react.dev/)
+[![Node.js](https://img.shields.io/badge/Backend-Node.js-339933?logo=nodedotjs)](https://nodejs.org/)
+[![AI](https://img.shields.io/badge/AI-XGBoost%20%7C%20Gemini-red)](https://xgboost.ai/)
 
----
-
-## 1. Architecture Overview
-
-### Components
-- **Wazuh (SIEM & XDR):** Collects logs from agents, analyzes them using rules, and triggers alerts.
-- **TheHive (Case Management):** Receives alerts from Wazuh via a custom webhook and organizes them into cases for analysts.
-- **Cortex (Analysis & Response Engine):** Acts as the automation brain behind TheHive. Analyzes observables (IPs, domains, hashes) and executes automated response scripts.
-- **MISP (Threat Intelligence):** A shared database of Threat Intelligence. Cortex uses MISP to enrich alerts with known malicious indicators.
-- **Kali Linux VM (Target Endpoint):** Simulates an endpoint in the network where attacks happen and the Wazuh Agent is installed.
-
-### Data Flow Pipeline
-1. **Detection:** An attacker scans/exploits the Kali VM. The Wazuh Agent relays logs to the Wazuh Manager.
-2. **Analysis:** Wazuh Manager matches logs against `custom_rules.xml`. If the severity level is > 7, it triggers the `wazuh_to_thehive.py` integration script.
-3. **Escalation:** The script creates an Alert (or Case) in TheHive via its REST API, attaching the source IP as an "observable".
-4. **Enrichment:** TheHive runs a Cortex Analyzer (e.g., `mock_ip_reputation.py` or MISP integration) against the IP. 
-5. **Response:** If the IP is confirmed malicious, Cortex executes a Responder (`wazuh_block_ip.py`). The responder sends an API call back to Wazuh to trigger an Active Response (e.g., `firewall-drop`).
-6. **Mitigation:** Wazuh pushes the block command to the Kali VM agent, effectively cutting off the attacker.
-   
----
-
-## 2. Setup Guide (Mac Host + Kali VM)
-
-### Prerequisites
-- **Mac Host:** Docker Engine (Docker Desktop or Colima), Docker Compose.
-- **Kali VM:** Installed via VMware Fusion, Parallels, or UTM.
-
-### A. Environment Configuration
-1. **Networking:** In your Hypervisor settings, your VM is currently using the default **Shared Network** (which assigns IPs like `192.168.64.x`). This is perfect! The Mac and VM can communicate bidirectionally.
-2. The VM's IP address is `192.168.64.9`. The Mac's IP address on this VM network is `192.168.64.1`.
-
-### B. Launching the SOAR Stack (on Mac)
-1. Clone / Navigate to this project directory: `cd SOAR`
-2. Start the Docker infrastructure:
-   ```bash
-   docker-compose up -d
-   ```
-   *Note: This will deploy Wazuh, Elasticsearch, TheHive, Cassandra, Cortex, MISP, and MariaDB. It requires at least 8-12GB of RAM allocated to Docker.*
-3. Verify containers are running: `docker ps`
-
-### C. Agent Installation (on Kali VM)
-1. Transfer the `scripts/agent_install.sh` to the Kali VM using `scp` (Secure Copy). Run this on your Mac terminal:
-   ```bash
-   scp scripts/agent_install.sh kali@192.168.64.9:/home/kali/
-   ```
-2. Connect to the Kali VM via SSH:
-   ```bash
-   ssh kali@192.168.64.9
-   ```
-3. Inside the Kali VM, make the script executable: `chmod +x agent_install.sh`
-4. Run the installer pointing to your Mac's IP address (where Wazuh Manager is hosted):
-   ```bash
-   sudo ./agent_install.sh 192.168.64.1
-   ```
-5. Verify the agent connects successfully in the Wazuh Dashboard (`https://localhost:5601` on Mac).
+This repository implements a production-grade **Security Orchestration, Automation, and Response (SOAR)** platform. It bridges the gap between raw threat detection and autonomous mitigation by integrating industry-standard tools (**Wazuh, TheHive, Cortex, MISP**) with a custom **MERN-stack dashboard** and an **8-module AI Intelligence Suite**.
 
 ---
 
-## 3. Custom Configurations & Playbooks
+## 🏛️ System Architecture
 
-- **Wazuh Integrations:** The `integrations/wazuh_to_thehive.py` script must be copied into the `/var/ossec/integrations/` directory of the `wazuh.manager` container. It allows automated forwarding of high-severity alerts.
-- **Cortex Analyzers:** Located in `cortex/analyzers/`. These Python scripts analyze observables against threat databases.
-- **Cortex Responders:** Located in `cortex/responders/`. These scripts take automated action (e.g., interacting with Wazuh's API to ban an IP).
+The platform operates as a containerized ecosystem, ensuring zero-touch orchestration between detection engines and response playbooks.
 
-### Running a Test End-to-End Workflow
-1. On the Kali VM, trigger a custom rule. For example, use netcat: `nc -e /bin/bash 127.0.0.1 4444` (simulating a reverse shell).
-2. Wazuh detects this (Rule ID `100002` from `custom_rules.xml`).
-3. View TheHive dashboard (`http://localhost:9000`). A new case/alert should automatically appear.
-4. Run the Cortex IP Analyzer on the associated Source IP.
-5. If malicious, run the Cortex Responder to block the IP. Verify on the Kali VM by checking iptables (`sudo iptables -L`).
+```mermaid
+graph TD
+    A[Kali Linux Endpoint] -- Telemetry --> B(Wazuh Manager)
+    B -- High-Severity Alert --> C{AI Triage Engine}
+    C -- "Score > 90%" --> D[Cortex Automation]
+    C -- "Score < 90%" --> E[Custom MERN Dashboard]
+    D -- Active Response --> A
+    E -- Human Analyst Action --> D
+    D -- Enrich --> F[MISP Threat Intel]
+```
+
+---
+
+## ✨ Key Features
+
+### 🧠 8-Module AI Intelligence Suite
+The core "brain" of the platform, designed to eliminate alert fatigue:
+1.  **ML Triage Analyzer**: XGBoost classifier achieving **100% accuracy** on KDD Cup '99 data.
+2.  **LLM Incident Commander**: Context-aware case summarization via Google Gemini.
+3.  **Anomaly Detection**: Isolation Forest modeling for zero-day deviation detection.
+4.  **Phishing NLP Parser**: Semantic analysis of email headers and bodies.
+5.  **Blast Radius Predictor**: Graph-based lateral movement risk assessment.
+6.  **Semantic Log Clustering**: DBSCAN grouping of noisy telemetry.
+7.  **Playbook Optimizer**: Self-learning feedback loop from analyst decisions.
+8.  **Auto-Forensics**: Automated generation of 10-section PDF forensic reports.
+
+### 💻 MERN Command Center
+A premium, dark-themed glassmorphic dashboard for SOC analysts:
+- **Real-time Threat Feeds**: Live sync with Wazuh and TheHive.
+- **One-Click Mitigation**: Block IPs, isolate hosts, or trigger playbooks directly.
+- **Role-Based Access**: Segregated views for Analysts and standard Users.
+- **Audit Logging**: Full traceability of every automated and manual action.
+
+---
+
+## 🚀 Quick Start Guide
+
+### 1. Launch the Infrastructure (Docker)
+Ensure Docker is allocated at least 8GB of RAM.
+```bash
+docker-compose up -d
+```
+
+### 2. Start the Custom Dashboard
+**Backend API:**
+```bash
+cd dashboard/backend
+npm install
+npm run seed  # Create default admin
+npm run dev
+```
+**Frontend UI:**
+```bash
+cd dashboard/frontend
+npm install
+npm run dev
+```
+*Access the dashboard at `http://localhost:5173` (admin / admin123)*
+
+### 3. Deploy the Agent (Kali VM)
+On your Mac, push the installer to your Kali VM:
+```bash
+scp scripts/agent_install.sh kali@<VM_IP>:/home/kali/
+ssh kali@<VM_IP>
+sudo ./agent_install.sh <MAC_IP>
+```
+
+---
+
+## ⚔️ Adversarial Simulations
+To verify the pipeline, run the integrated demo attack script on your Kali VM:
+```bash
+chmod +x scripts/demo_attack.sh
+./scripts/demo_attack.sh
+```
+This triggers **8 real-world scenarios**:
+- SSH Brute Force (T1110)
+- Webshell Deployment (T1505.003)
+- Privilege Escalation (T1068)
+- Network Reconnaissance (T1046)
+
+---
+
+## 📄 Documentation & Research
+- **[Research Paper](SOAR_Research_Paper.md)**: Deep dive into the ML Triage methodology and KDD Cup '99 mapping.
+- **[Final System Report](SOAR_Final_Report.md)**: Comprehensive guide to the infrastructure and AI modules.
+
+---
+**Developed for the Advanced SOAR Research Project — 2026**
